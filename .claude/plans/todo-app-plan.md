@@ -27,6 +27,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
 - **성공기준**:
   - 조건: `TeamCreate("todo-app")` 호출
   - 결과: 팀 생성 완료, `TaskList` 조회 시 Backend/Frontend/QA 3명의 팀메이트가 `active` 상태로 표시
+- **커밋**: `chore: create todo-app team with backend, frontend, QA agents`
 
 ### Task 0-2: 테스트 인프라 설정 (QA 담당)
 - 설치: `bun add -d vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event @vitejs/plugin-react jsdom`
@@ -42,6 +43,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: exit code 0, 콘솔에 "no test suites found" 또는 테스트 0개 통과 메시지 출력 (에러 없음)
   - 조건: `vitest.config.ts`에서 `@/*` alias resolve 확인
   - 결과: `resolve.alias`에 `@` → 프로젝트 루트 매핑 존재
+- **커밋**: `chore: setup vitest test infrastructure with RTL and mock helpers`
 
 ---
 
@@ -62,6 +64,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...` (유효한 JWT) 존재
   - 조건: `cat .gitignore | grep supabase`
   - 결과: `.supabase/` 라인 존재
+- **커밋**: `feat: initialize Supabase Local with env config`
 
 ### Task 1-2: DB 스키마 마이그레이션
 - `supabase/migrations/20260226000001_create_tables.sql`:
@@ -78,6 +81,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: exit code 0, "Applying migration" 로그에 `20260226000001_create_tables.sql` 포함, 에러 메시지 없음
   - 조건: Supabase Studio(`http://127.0.0.1:54323`)에서 테이블 목록 확인
   - 결과: `todos`, `categories`, `tags`, `todo_tags` 4개 테이블 존재, `priority` enum 타입 존재
+- **커밋**: `feat: add DB schema migration for todos, categories, tags tables`
 
 ### Task 1-3: RLS 정책
 - `supabase/migrations/20260226000002_enable_rls.sql`:
@@ -88,6 +92,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: HTTP 200, 응답 body `[]` (빈 배열) — RLS가 미인증 요청을 차단
   - 조건: `npx supabase db reset` 실행
   - 결과: 두 마이그레이션 파일 모두 에러 없이 적용
+- **커밋**: `feat: enable RLS policies for all tables`
 
 ### Task 1-4: Supabase 클라이언트 유틸리티
 - `lib/supabase/server.ts` — 서버 클라이언트 (`cookies()` async 처리)
@@ -98,6 +103,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `lib/supabase/server.ts`, `lib/supabase/client.ts`, `lib/supabase/types.ts` 관련 타입 에러 0건
   - 조건: `server.ts`에서 `createClient()` 반환 타입 확인
   - 결과: `SupabaseClient<Database>` 타입으로 추론됨
+- **커밋**: `feat: add Supabase client utilities with DB types`
 
 ---
 
@@ -110,6 +116,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
 - **성공기준**:
   - 조건: `bun test --run` 실행
   - 결과: auth 관련 테스트 파일 3개 실행, 전체 FAIL (구현체 미존재), exit code 1
+- **커밋**: `test: add auth validation and form component tests (TDD red)`
 
 ### Task 2-2: 미들웨어 (Backend 담당)
 - `middleware.ts` (프로젝트 루트):
@@ -122,6 +129,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: HTTP 307, `Location: /login` 헤더 포함
   - 조건: 미인증 상태에서 `curl -I http://localhost:3000/login` 요청
   - 결과: HTTP 200 (리다이렉트 없음, 로그인 페이지 정상 접근)
+- **커밋**: `feat: add auth middleware with route protection`
 
 ### Task 2-3: Auth 서버 액션 (Backend 담당)
 - `app/(auth)/actions.ts`: `signUp`, `signIn`, `signOut`
@@ -135,6 +143,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 세션 쿠키 설정, `/`로 리다이렉트
   - 조건: `signUp` 호출 — `email: ""`, `password: "12"`
   - 결과: `{ error: "..." }` 반환, DB에 레코드 생성되지 않음
+- **커밋**: `feat: implement auth server actions (signUp, signIn, signOut)`
 
 ### Task 2-4: Auth 페이지 (Frontend 담당)
 - `app/(auth)/layout.tsx` — 중앙 정렬 레이아웃
@@ -146,14 +155,14 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `login-form.test.tsx`, `signup-form.test.tsx` 모든 케이스 PASS
   - 조건: 브라우저에서 `/signup` 접속 → 이메일/비밀번호 입력 후 제출
   - 결과: 회원가입 성공 후 `/login`으로 이동 또는 자동 로그인
+- **커밋**: `feat: add login and signup pages with form components`
 
 ### Task 2-5: Auth 통합 테스트 (QA 담당)
 - `__tests__/integration/auth-flow.test.tsx`: 가입→로그인→로그아웃→라우트보호 시나리오
 - **성공기준**:
   - 조건: `bun test __tests__/integration/auth-flow.test.tsx --run` 실행
   - 결과: 모든 테스트 케이스 PASS, exit code 0
-
-**커밋**: "feat: implement email/password auth with Supabase Local"
+- **커밋**: `test: add auth integration tests`
 
 ---
 
@@ -168,6 +177,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `checkbox.tsx`, `dialog.tsx`, `sheet.tsx`, `switch.tsx`, `tabs.tsx`, `popover.tsx`, `tooltip.tsx`, `skeleton.tsx`, `scroll-area.tsx`, `calendar.tsx`, `sidebar.tsx` 파일 모두 존재
   - 조건: `bun run build` 실행
   - 결과: exit code 0, 빌드 성공
+- **커밋**: `feat: install additional shadcn components and date-fns`
 
 ### Task 3-2: ThemeProvider
 - `components/providers/theme-provider.tsx` — dark 클래스 토글, localStorage 지속
@@ -178,12 +188,14 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `<html>` 태그에 `class="dark"` 추가/제거, 배경색 변경
   - 조건: 다크모드 상태에서 페이지 새로고침
   - 결과: `localStorage.getItem("theme")` === `"dark"`, `<html class="dark">` 유지
+- **커밋**: `feat: add ThemeProvider with dark mode toggle and persistence`
 
 ### Task 3-3: 사이드바 테스트 (QA 담당)
 - `components/layout/__tests__/app-sidebar.test.tsx`: 네비게이션 렌더링, 활성 상태, 로그아웃 테스트
 - **성공기준**:
   - 조건: `bun test components/layout/__tests__/app-sidebar.test.tsx --run` 실행
   - 결과: 전체 FAIL (구현체 미존재), exit code 1, 각 테스트 케이스별 실패 사유 출력
+- **커밋**: `test: add sidebar component tests (TDD red)`
 
 ### Task 3-4: 사이드바 + 대시보드 레이아웃 (Frontend 담당)
 - `components/layout/app-sidebar.tsx` — shadcn Sidebar 활용:
@@ -200,8 +212,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 좌측에 사이드바 표시 — "All", "Today", "Upcoming", "Completed" 네비게이션 링크, "Settings", "Sign Out" 버튼 표시
   - 조건: 브라우저 375px 너비에서 `/` 접속
   - 결과: 사이드바 숨김, 상단에 햄버거 메뉴 아이콘 표시
-
-**커밋**: "feat: add sidebar layout with navigation and theme toggle"
+- **커밋**: `feat: add sidebar layout with navigation and dashboard shell`
 
 ---
 
@@ -226,6 +237,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `categories` 테이블에 레코드 생성
   - 조건: 동일 유저가 `createCategory({ name: "업무", color: "#00FF00" })` 재호출
   - 결과: unique 제약 위반 에러 반환
+- **커밋**: `feat: implement todo, category, tag server actions`
 
 ### Task 4-2: Todo 컴포넌트 테스트 (QA 담당)
 - `components/todo/__tests__/todo-item.test.tsx`: 렌더링, 체크박스, 우선순위 뱃지, 삭제 확인
@@ -234,6 +246,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
 - **성공기준**:
   - 조건: `bun test components/todo/__tests__/ --run` 실행
   - 결과: 3개 테스트 파일 실행, 전체 FAIL (구현체 미존재), exit code 1
+- **커밋**: `test: add todo component tests (TDD red)`
 
 ### Task 4-3: TodoItem 컴포넌트 (Frontend 담당)
 - `components/todo/todo-item.tsx`:
@@ -247,6 +260,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 모든 테스트 PASS
   - 조건: `{ title: "할일", completed: true, priority: "high" }` 데이터로 TodoItem 렌더링
   - 결과: 제목에 `line-through` 스타일, 체크박스 checked, "high" 우선순위 뱃지 표시
+- **커밋**: `feat: add TodoItem, empty state, and skeleton components`
 
 ### Task 4-4: TodoList + 검색/필터 (Frontend 담당)
 - `components/todo/todo-list.tsx` — 필터/정렬된 아이템 리스트, ScrollArea
@@ -262,6 +276,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: `priority: "high"`인 todo만 표시
   - 조건: 정렬을 "마감일순"으로 변경
   - 결과: `due_date` 오름차순 정렬 (null은 맨 뒤)
+- **커밋**: `feat: add TodoList with search, filter, and sort`
 
 ### Task 4-5: Todo 생성/수정/삭제 (Frontend 담당)
 - `components/todo/date-picker.tsx` — Popover + Calendar
@@ -277,6 +292,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 폼 필드에 기존 값 프리필 — title 입력란에 "기존 할일", priority에 "medium" 선택 상태
   - 조건: 삭제 다이얼로그에서 "삭제" 버튼 클릭
   - 결과: 해당 todo가 리스트에서 제거, DB에서도 삭제
+- **커밋**: `feat: add todo create, edit, delete dialogs with date picker`
 
 ### Task 4-6: 대시보드 메인 페이지 조립 (Frontend 담당)
 - `app/(protected)/page.tsx`:
@@ -291,6 +307,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 다이얼로그 닫힘, TodoList에 새 할일 즉시 표시
   - 조건: todo 항목의 체크박스 클릭
   - 결과: 완료 상태 토글, 제목에 line-through 스타일 적용/해제
+- **커밋**: `feat: assemble dashboard main page with todo components`
 
 ### Task 4-7: Todo CRUD 통합 테스트 (QA 담당)
 - `__tests__/integration/todo-crud.test.tsx`: 생성→조회→수정→삭제 시나리오
@@ -298,8 +315,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
 - **성공기준**:
   - 조건: `bun test __tests__/integration/ --run` 실행
   - 결과: `todo-crud.test.tsx`, `filter-search.test.tsx` 모든 테스트 PASS, exit code 0
-
-**커밋**: "feat: implement todo CRUD with search, filter, sort"
+- **커밋**: `test: add todo CRUD and filter/search integration tests`
 
 ---
 
@@ -311,6 +327,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
 - **성공기준**:
   - 조건: `bun test components/settings/__tests__/ --run` 실행
   - 결과: 2개 테스트 파일 실행, 전체 FAIL (구현체 미존재), exit code 1
+- **커밋**: `test: add settings component tests (TDD red)`
 
 ### Task 5-2: Settings 컴포넌트 (Frontend 담당)
 - `components/settings/theme-toggle.tsx` — Switch + SunIcon/MoonIcon
@@ -326,6 +343,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 제출 차단, "비밀번호는 6자 이상이어야 합니다" 에러 메시지 표시
   - 조건: 새 비밀번호와 확인 비밀번호 불일치 상태에서 제출
   - 결과: "비밀번호가 일치하지 않습니다" 에러 메시지 표시
+- **커밋**: `feat: add settings components (theme toggle, password form, terms)`
 
 ### Task 5-3: Settings 페이지 조립 (Frontend 담당)
 - `app/(protected)/settings/page.tsx`:
@@ -337,14 +355,14 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 비밀번호 변경 폼 + 이메일 인증 상태 Badge 표시
   - 조건: "Legal" 탭 클릭
   - 결과: ScrollArea 내에 이용약관 텍스트 표시
+- **커밋**: `feat: assemble settings page with tabbed layout`
 
 ### Task 5-4: Settings 통합 테스트 (QA 담당)
 - `__tests__/integration/settings-updates.test.tsx`: 테마 변경, 비밀번호 변경 시나리오
 - **성공기준**:
   - 조건: `bun test __tests__/integration/settings-updates.test.tsx --run` 실행
   - 결과: 모든 테스트 PASS, exit code 0
-
-**커밋**: "feat: add settings page with theme, password, terms"
+- **커밋**: `test: add settings integration tests`
 
 ---
 
@@ -358,6 +376,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: "No such file or directory" — 예제 파일 삭제 확인
   - 조건: 미인증 상태에서 `/` 접근
   - 결과: `/login`으로 리다이렉트 (protected 라우트 정상 동작)
+- **커밋**: `chore: remove example files and configure root redirect`
 
 ### Task 6-2: 모바일 반응형 확인
 - 사이드바 → Sheet로 축소 (768px 이하)
@@ -368,6 +387,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: 사이드바 숨김 + 햄버거 메뉴로 접근, 우하단 FAB으로 todo 생성, 필터 칩 영역 수평 스크롤 가능
   - 조건: 375px 뷰포트에서 todo 생성 → 수정 → 삭제 플로우 수행
   - 결과: 모든 다이얼로그가 화면 내에 표시, 잘림 없이 정상 동작
+- **커밋**: `feat: add mobile responsive layout (sheet sidebar, FAB, scroll chips)`
 
 ### Task 6-3: 최종 검증
 - `bun test` — 모든 테스트 통과
@@ -380,8 +400,7 @@ Next.js 16 + shadcn/ui 기반 프로젝트에 Supabase Local을 활용한 Todo �
   - 결과: "✓ Compiled successfully" 또는 "Build completed", exit code 0
   - 조건: `bun run lint` 실행
   - 결과: 경고/에러 0건, exit code 0
-
-**커밋**: "chore: cleanup example code and verify build"
+- **커밋**: `chore: verify all tests pass, build succeeds, lint clean`
 
 ---
 
